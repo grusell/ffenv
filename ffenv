@@ -86,7 +86,7 @@ ffenv_configure_build() {
     fi
     mkdir -p $builddir
     cd $builddir
-    args="$(cat ~/.ffenv/build-configs/default | tr '\n' ' ') --prefix=$FFMPEG_ROOT/$name"
+    args="$(cat ~/.ffenv/build-configs/default | sed -re 's/#.*$//g' | tr '\n' ' ') --prefix=$FFMPEG_ROOT/$name"
     $repo/configure $args
 }
 
