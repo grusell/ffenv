@@ -135,7 +135,7 @@ ffenv_init() {
 }
 
 ffenv() {
-    if [[ $1 == "list" ]]
+    if [[ $# == 0 ]] || [[ $1 == "list" ]]
     then
         ffenv_list
     elif [[ $1 == "use" ]]
