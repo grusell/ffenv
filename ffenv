@@ -32,9 +32,13 @@ ffenv_update_path() {
     echo "${new_path::-1}"  # Remove trailing colon
 }
 
-ffenv_update_path_and_ld_library_path() {
+ffenv_update_env_variables() {
    export PATH=$(ffenv_update_path "$PATH" $FFMPEG_HOME/bin)
    export LD_LIBRARY_PATH=$(ffenv_update_path "$LD_LIBRARY_PATH" $FFMPEG_HOME/lib)
+   export LIBRARY_PATH=$(ffenv_update_path "$LIBRARY_PATH" $FFMPEG_HOME/lib)
+   export PKG_CONFIG_PATH=$(ffenv_update_path "$PKG_CONFIG_PATH" $FFMPEG_HOME/lib/pkgconfig)
+   export C_INCLUDE_PATH=$(ffenv_update_path "$C_INCLUDE_PATH" $FFMPEG_HOME/include)
+   export CPLUS_INCLUDE_PATH=$(ffenv_update_path "$CPLUS_INCLUDE_PATH" $FFMPEG_HOME/include)
 }
 
 ffenv_use() {
@@ -47,7 +51,7 @@ ffenv_use() {
     fi
     export FFMPEG_CURRENT=$1
     export FFMPEG_HOME=$FFMPEG_ROOT/$FFMPEG_CURRENT
-    ffenv_update_path_and_ld_library_path
+    ffenv_update_env_variables
 }
 
 ffenv_get_name() {
@@ -86,7 +90,12 @@ ffenv_configure_build() {
     fi
     mkdir -p $builddir
     cd $builddir
-    args="$(cat ~/.ffenv/build-configs/default | sed -re 's/#.*$//g' | tr '\n' ' ') --prefix=$FFMPEG_ROOT/$name"
+    conffile=$FFMPEG_ROOT/$name/config.txt
+    if ! [[ -f $conffile ]]
+    then
+        cp ~/.ffenv/build-configs/default $conffile
+    fi
+    args="$(cat $conffile | sed -re 's/#.*$//g' | tr '\n' ' ') --prefix=$FFMPEG_ROOT/$name"
     $repo/configure $args
 }
 
@@ -116,6 +125,17 @@ ffenv_get_default() {
     fi
 }
 
+ffenv_set_default() {
+    if [[ -d $FFMPEG_ROOT/$1 ]]
+    then
+        rm $FFMPEG_ROOT/default
+        ln -s $FFMPEG_ROOT/$1 $FFMPEG_ROOT/default
+    else
+        echo "Unknown version: $1"
+        return 1
+    fi
+    }
+
 ffenv_init() {
     if [[ -z "$FFMPEG_MAIN_REPO" ]]
     then
@@ -131,7 +151,23 @@ ffenv_init() {
         export FFMPEG_CURRENT=$(ffenv_get_default)
     fi
     export FFMPEG_HOME=$FFMPEG_ROOT/$FFMPEG_CURRENT
-    ffenv_update_path_and_ld_library_path
+    ffenv_update_env_variables
+}
+
+ffenv_select_version() {
+    if [[ -n "$1" ]] && [[ -d $FFMPEG_ROOT/$1 ]]
+    then
+        echo "$1"
+    else
+        select version in $(ls -1 $FFMPEG_ROOT | grep -v default)
+        do
+            if [[ -n "$version" ]]
+            then
+                echo $version
+                break
+            fi
+        done
+    fi
 }
 
 ffenv() {
@@ -140,7 +176,10 @@ ffenv() {
         ffenv_list
     elif [[ $1 == "use" ]]
     then
-        ffenv_use $2
+        ffenv_use $(ffenv_select_version "$2")
+    elif [[ $1 == "set-default" ]]
+    then
+        ffenv_set_default $(ffenv_select_version "$2")
     fi
 }
 
