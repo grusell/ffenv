@@ -141,7 +141,7 @@ ffenv_configure_build() {
     conffile=$FFMPEG_ROOT/$name/config.txt
     if ! [[ -f $conffile ]]
     then
-        cp ~/.ffenv/build-configs/default $conffile
+        cp ~/.config/ffenv/build-configs/default $conffile
     fi
     args="$(cat $conffile | sed -re 's/#.*$//g' | tr '\n' ' ') --prefix=$FFMPEG_ROOT/$name"
     $repo/configure $args
