@@ -1,5 +1,52 @@
 #!/usr/bin/env bash
 
+#
+# prerequisists: git, make, gcc
+#
+
+FFMPEG_GITHUB_URL=https://github.com/FFmpeg/FFmpeg.git
+
+ffenv_install_ubuntu_dependencies() {
+    # This installs the dependencies specified at
+    # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
+sudo apt-get update -qq && sudo apt-get -y install \
+  autoconf \
+  automake \
+  build-essential \
+  cmake \
+  git-core \
+  libass-dev \
+  libfreetype6-dev \
+  libgnutls28-dev \
+  libmp3lame-dev \
+  libsdl2-dev \
+  libtool \
+  libva-dev \
+  libvdpau-dev \
+  libvorbis-dev \
+  libxcb1-dev \
+  libxcb-shm0-dev \
+  libxcb-xfixes0-dev \
+  meson \
+  ninja-build \
+  pkg-config \
+  texinfo \
+  wget \
+  yasm \
+  zlib1g-dev \
+  libunistring-dev \
+  libaom-dev \
+  libdav1d-dev \
+  nasm \
+  libx264-dev \
+  libx265-dev \
+  libvpx-dev \
+  libssh-dev \
+  libxml2-dev \
+  liblzma-dev
+
+}
+
 ffenv_list() {
     default=$(ffenv_get_default)
     current=$FFMPEG_CURRENT
