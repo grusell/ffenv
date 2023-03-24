@@ -122,7 +122,8 @@ ffenv_setup_repo() {
     else
         version_dir=$FFMPEG_ROOT/$name
         mkdir -p $version_dir
-        (cd $FFMPEG_MAIN_REPO; git worktree add $repo $version)
+        git clone --depth 1 --branch $version $FFMPEG_GITHUB_URL $repo
+#        (cd $FFMPEG_MAIN_REPO; git worktree add $repo $version)
     fi
 }
 
