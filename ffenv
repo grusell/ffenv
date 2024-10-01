@@ -218,17 +218,49 @@ ffenv_select_version() {
     fi
 }
 
+ffenv_help() {
+    cat <<EOF
+ffenv - tool to manage multiple ffmpeg versions
+
+USAGE: $0 CMD [options]
+
+commands
+  help                  print help message
+  list                  list installed versions
+  use VERSION           use given version in current shell
+  set-default VERSION   set default version
+  install VERSION       install given version
+
+VERSION parameter can be a tag name, a commit, or a numeric version
+
+Default args to pass to configre are read from ~/.ffenv/build-configs/default
+EOF
+}
+
 ffenv() {
-    if [[ $# == 0 ]] || [[ $1 == "list" ]]
+    if [[ $# == 0 ]]
     then
         ffenv_list
-    elif [[ $1 == "use" ]]
-    then
-        ffenv_use $(ffenv_select_version "$2")
-    elif [[ $1 == "set-default" ]]
-    then
-        ffenv_set_default $(ffenv_select_version "$2")
+        return
     fi
+    case $1 in
+        help | -h | --help)
+            ffenv_help
+            return
+            ;;
+        list)
+            ffenv_list
+            ;;
+        use)
+            ffenv_use $(ffenv_select_version "$2")
+            ;;
+        set-default)
+            ffenv_set_default $(ffenv_select_version "$2")
+            ;;
+        install)
+            ffenv_install_version $2 $3
+            ;;
+    esac
 }
 
 ffenv_init
