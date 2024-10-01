@@ -260,7 +260,7 @@ commands
 
 VERSION parameter can be a tag name, a commit, or a numeric version
 
-Default args to pass to configre are read from ~/.ffenv/build-configs/default
+Default args to pass to configure are read from ~/.config/ffenv/build-configs/default
 EOF
 }
 
