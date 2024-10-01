@@ -110,9 +110,25 @@ ffenv_get_name() {
     fi
 }
 
+
+ffenv_get_version_and_name() {
+    if [[ $1 =~ n[0-9.]+ ]]
+    then
+        local version=${1#n}
+    elif [[ $1 =~ [0-9.]+ ]]
+    then
+        local version=$1
+    fi
+    if [[ -n "$2" ]]
+    then
+        local name=$2
+    fi
+    version_tag=n${version}
+    echo "$version_tag $name"
+}
+
 ffenv_setup_repo() {
-    version=$1
-    name=$(ffenv_get_name $1 $2)
+    read -r version name <<<$(ffenv_get_version_and_name $1 $2)
     repo=$FFMPEG_ROOT/$name/gitrepo
     echo "repo: $repo"
     if [[ -e $repo/.git ]]
@@ -125,6 +141,11 @@ ffenv_setup_repo() {
         git clone --depth 1 --branch $version $FFMPEG_GITHUB_URL $repo
 #        (cd $FFMPEG_MAIN_REPO; git worktree add $repo $version)
     fi
+}
+
+ffenv_configure_args() {
+    local conffile=$1
+    cat $conffile | sed -re 's/#.*$//g' | tr '\n' ' '
 }
 
 ffenv_configure_build() {
@@ -143,14 +164,20 @@ ffenv_configure_build() {
     then
         cp ~/.config/ffenv/build-configs/default $conffile
     fi
-    args="$(cat $conffile | sed -re 's/#.*$//g' | tr '\n' ' ') --prefix=$FFMPEG_ROOT/$name"
+    args="$(ffenv_configure_args $conffile) --prefix=$(ffenv_prefix $name)"
     $repo/configure $args
+    make clean
+}
+
+# Get prefix to use in configure for given ffmpeg version
+ffenv_prefix() {
+    local name=$1
+    echo "$FFMPEG_ROOT/$name"
 }
 
 ffenv_install_version() {
-    version=$1
-    name=$(ffenv_get_name $1 $2)
-    echo "Installing version $version"
+    read -r version name <<<$(ffenv_get_version_and_name $1 $2)
+    echo "Installing version/tag $version with name $name"
     if [[ ! -e $FFMPEG_ROOT/$name/gitrepo/.git ]]
     then
         ffenv_setup_repo $version $name
